@@ -12,26 +12,13 @@
 # You should have received a copy of the GNU General Public License along with Octopus Sensing
 # Processing. If not, see <https://www.gnu.org/licenses/>.
 
-import io
-import random
-import json
 import pickle
-import base64
 import urllib.request
 import logging
 import time
 # The data received from the server might be in numpy format.
 # We need to import 'numpy' to unpickle it.
-import numpy
-import PIL.Image
 from typing import Optional, List
-
-
-def encode_image_to_base64(image_array):
-    image_buffer = io.BytesIO()
-    PIL.Image.fromarray(image_array) \
-        .save(image_buffer, format="png")
-    return str(base64.b64encode(image_buffer.getvalue()), "ascii")
 
 
 class OctopusSensingClient:
@@ -59,18 +46,36 @@ class OctopusSensingClient:
         raw_data = pickle.loads(serialized_data)
         data = {}
 
-        if "eeg" in raw_data:
-            data["eeg"] = self._restructure_eeg(raw_data["eeg"])
+        for key, device_data in raw_data.items():
+            print(device_data)
+            print(key)
+            print("*****************************")
+            if device_data["metadata"]["type"] == "OpenBCIStreaming":
+                data.setdefault("eeg", {})
+                data["eeg"]["data"] = self._restructure_eeg(device_data["data"])
+                data["eeg"]["sampling_rate"] = device_data["metadata"]["sampling_rate"]
+                data["eeg"]["channels"] = device_data["metadata"]["channels"]
 
-        if "shimmer" in raw_data:
-            gsr_records, ppg_records, = self._restructure_shimmer(
-                raw_data["shimmer"])
-            data["gsr"] = gsr_records
-            data["ppg"] = ppg_records
+            if device_data["metadata"]["type"] == "BrainFlowOpenBCIStreaming":
+                data.setdefault("eeg", {})
+                data["eeg"]["data"] = self._restructure_eeg(device_data["data"])
+                data["eeg"]["sampling_rate"] = device_data["metadata"]["sampling_rate"]
+                data["eeg"]["channels"] = device_data["metadata"]["channels"]
 
-        if "camera" in raw_data:
-            # The type of data is a list of numpy-array. Each item is a frame
-            data["camera"] = raw_data["camera"]
+            if device_data["metadata"]["type"] == "Shimmer3Streaming":
+                data.setdefault("ppg", {})
+                data.setdefault("gsr", {})
+                gsr_records, ppg_records, = self._restructure_shimmer(device_data["data"])
+                data["gsr"]["data"] = gsr_records
+                data["ppg"]["data"] = ppg_records
+                data["gsr"]["sampling_rate"] = device_data["metadata"]["sampling_rate"]
+                data["ppg"]["sampling_rate"] = device_data["metadata"]["sampling_rate"]
+
+            if device_data["metadata"]["type"] == "CameraStreaming":
+                data.setdefault("camera", {})
+                # The type of data is a list of numpy-array. Each item is a frame
+                data["camera"]["data"] = device_data["data"]
+                data["camera"]["frame_rate"] = device_data["metadata"]["frame_rate"]
 
         return data
 
@@ -93,7 +98,7 @@ class OctopusSensingClient:
                 else:
                     logging.error(f"Getting data failed. Re-trying [{retries}]. Error: {err}")
                     time.sleep(1)
-                    return self.__request_data(request, retries=retries - 1)
+                    return self.__request_data(url, retries=retries - 1)
 
 
     def _restructure_eeg(self, data):
@@ -122,24 +127,3 @@ class OctopusSensingClient:
 
         return (gsr_records, ppg_records)
 
-
-    
-class MockClient:
-
-    def fetch(self):
-        # Three seconds of random data
-        eeg_data = []
-        for _ in range(16):
-            eeg_data.append(self._three_seconds_random_data())
-
-        random_frame_data = numpy.random.randint(
-            low=1, high=255, size=(640, 480, 3), dtype=numpy.uint8)
-        random_frame = encode_image_to_base64(random_frame_data)
-
-        return json.dumps({"eeg": eeg_data,
-                           "gsr": self._three_seconds_random_data(),
-                           "ppg": self._three_seconds_random_data(),
-                           "camera": random_frame})
-
-    def _three_seconds_random_data(self):
-        return [round(random.uniform(0.01, 0.9), 5) for _ in range(3 * 128)]

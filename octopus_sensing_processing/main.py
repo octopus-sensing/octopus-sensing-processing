@@ -17,22 +17,53 @@ import argparse
 
 from octopus_sensing_processing.octopus_sensing_client import OctopusSensingClient
 
-# def get_args():
-#     arg_parser = argparse.ArgumentParser()
-#     arg_parser.add_argument("-f", "--fake",
-#                             help="start a fake server that generates random data",
-#                             action="store_true")
-#     return arg_parser.parse_args()
+from octopus_sensing_processing.result_endpoint import ResultEndpointServer
+from octopus_sensing_processing.result_streaming import ResultStreaming
+
+def get_args():
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument("-s", "--streaming",
+                            help="Stream the result.",
+                            default=False,
+                            type=bool)
+    arg_parser.add_argument("-r", "--request",
+                            help="request the result.",
+                            default=True,
+                            type=bool)
+    arg_parser.add_argument("-m", "--module",
+                            help="The module containing the processor function.",
+                            required=True)
+    arg_parser.add_argument("-f", "--function",
+                            help="The name of the processor function.",
+                            required=True)
+    return arg_parser.parse_args()
 
 
 def main():
-    # args = get_args()
+    args = get_args()
+
+    processor_module = __import__(args.module, globals(), locals(), [args.function])
+    processor = getattr(processor_module, args.function)
 
     client = OctopusSensingClient()
 
+    if args.request is True:
+        data = client.fetch(duration=2, device_list=["camera"]) 
+        result_endpoint = ResultEndpointServer()
+        result_endpoint.start()
+
+    if args.streaming is True:
+        result_streaming = ResultStreaming()
     while True:
-        data = client.fetch(duration=2, device_list=["camera", "audio"])
-        time.sleep(1)
-        
+        data = client.fetch(duration=3, device_list=["camera"])
+        if args.streaming is True:
+            processing_result = processor(data)
+            result_streaming.push_processing_result(processing_result)
+        if args.request is True:
+            processing_result = processor(data)
+            result_endpoint.set_result(processing_result)
+        time.sleep(3)
+
+
 if __name__ == '__main__':
     main()

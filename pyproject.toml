@@ -1,18 +1,15 @@
 [tool.poetry]
 name = "octopus-sensing-processing"
-version = "1.1.1"
+version = "1.1.10"
 description = "Web base data processing for https://octopus-sensing.nastaran-saffar.me"
 authors = ["Aidin Gharibnavaz <aidin@aidinhut.com>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/octopus-sensing/octopus-sensing-processing"
 
-include = ["octopus_sensing_processing/ui_build/*"]
-
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
 numpy = "^1.21.0"
-Pillow = "^8.2.0"
 CherryPy = "^18.6.0"
 
 [tool.poetry.dev-dependencies]
