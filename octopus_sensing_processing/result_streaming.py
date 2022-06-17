@@ -16,6 +16,7 @@ import json
 import urllib.request
 import logging
 import time
+
 # The data received from the processor might is in numpy format.
 # We need to import 'numpy' to unpickle it.
 
@@ -34,7 +35,7 @@ class ResultStreaming:
     def __post_data(self, url, result_json, retries=3):
             try:
                 request = urllib.request.Request(url,
-                                                headers={"Accept": "application/json"},
+                                                headers={"Content-Type": "application/json"},
                                                 method='POST',
                                                 data=result_json)
                 with urllib.request.urlopen(request) as response:

@@ -14,6 +14,7 @@
 
 import time
 import argparse
+import datetime
 
 from octopus_sensing_processing.octopus_sensing_client import OctopusSensingClient
 
@@ -22,6 +23,11 @@ from octopus_sensing_processing.result_streaming import ResultStreaming
 
 def get_args():
     arg_parser = argparse.ArgumentParser()
+
+    arg_parser.add_argument("-d", "--duration",
+                            help="duration of getting data in seconds",
+                            default=3,
+                            type=int)
     arg_parser.add_argument("-s", "--streaming",
                             help="Stream the result.",
                             default=False,
@@ -48,22 +54,24 @@ def main():
     client = OctopusSensingClient()
 
     if args.request is True:
-        data = client.fetch(duration=2, device_list=["camera"]) 
         result_endpoint = ResultEndpointServer()
         result_endpoint.start()
 
     if args.streaming is True:
         result_streaming = ResultStreaming()
     while True:
-        data = client.fetch(duration=3, device_list=["camera"])
+        start = time.time()
+        data = client.fetch(duration=args.duration, device_list=["camera"])
+        processing_result = processor(data)
         if args.streaming is True:
-            processing_result = processor(data)
             result_streaming.push_processing_result(processing_result)
         if args.request is True:
-            processing_result = processor(data)
             result_endpoint.set_result(processing_result)
-        time.sleep(3)
 
+        end = time.time()
+        computation_delay = end-start
+        if computation_delay < args.duration:
+            time.sleep(args.duration - computation_delay)
 
 if __name__ == '__main__':
     main()
