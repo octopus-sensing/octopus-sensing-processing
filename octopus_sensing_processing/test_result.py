@@ -12,7 +12,9 @@
 # You should have received a copy of the GNU General Public License along with Octopus Sensing
 # Processing. If not, see <https://www.gnu.org/licenses/>.
 
+from operator import imod
 import cherrypy
+import http.client
 
 class ResultEndpoint:
 
@@ -25,7 +27,7 @@ class ResultEndpoint:
         print(cherrypy.request.json)
 
 
-def main():
+def test_streaming():
     endpoint = ResultEndpoint()
 
     cherrypy.tree.mount(endpoint, '/')
@@ -36,4 +38,19 @@ def main():
     cherrypy.engine.start()
     cherrypy.engine.block()
 
-main()
+def test_endpoint():
+    connection = http.client.HTTPConnection('localhost', 9333, timeout=10)
+    print(connection)
+    while True:
+        command = input('Press any key if you want to request a processing result. Otherwise press "q" to exit')
+        if command == "q":
+            break
+        connection.request("GET", "/get_processing_result")
+        response = connection.getresponse()
+        print("Status: {} and reason: {}".format(response.status, response.reason))
+        print(response.read())
+
+    connection.close()
+
+#test_streaming()
+test_endpoint()

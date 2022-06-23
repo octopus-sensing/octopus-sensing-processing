@@ -14,7 +14,6 @@
 
 import time
 import argparse
-import datetime
 
 from octopus_sensing_processing.octopus_sensing_client import OctopusSensingClient
 
@@ -24,18 +23,21 @@ from octopus_sensing_processing.result_streaming import ResultStreaming
 def get_args():
     arg_parser = argparse.ArgumentParser()
 
-    arg_parser.add_argument("-d", "--duration",
-                            help="duration of getting data in seconds",
+    arg_parser.add_argument("-t", "--time",
+                            help="The time duration of getting data in seconds.",
                             default=3,
                             type=int)
+
+    arg_parser.add_argument("-d", "--devices",
+                            help="The list of devices names. It can be like this: device1,device2",
+                            type=str,
+                            required=True)
     arg_parser.add_argument("-s", "--streaming",
-                            help="Stream the result.",
-                            default=False,
-                            type=bool)
-    arg_parser.add_argument("-r", "--request",
-                            help="request the result.",
-                            default=True,
-                            type=bool)
+                            help="Stream the result. Example: http://127.0.0.1:9332/",
+                            type=str)
+    arg_parser.add_argument("-e", "--endpoint",
+                            help="GET endpoint for the result. Example: 0.0.0.0:9333",
+                            type=str)
     arg_parser.add_argument("-m", "--module",
                             help="The module containing the processor function.",
                             required=True)
@@ -53,25 +55,29 @@ def main():
 
     client = OctopusSensingClient()
 
-    if args.request is True:
-        result_endpoint = ResultEndpointServer()
+    if args.endpoint is not None:
+        server_address = args.endpoint.split(":")
+        if len(server_address) < 2:
+            raise RuntimeError("The endpoint addrees is not in the correct format. It should be something like this: 0.0.0.0:9333")
+        result_endpoint = ResultEndpointServer(host=server_address[0], port=int(server_address[1]))
         result_endpoint.start()
 
-    if args.streaming is True:
-        result_streaming = ResultStreaming()
+    if args.streaming is not None:
+        result_streaming = ResultStreaming(url=args.streaming)
     while True:
         start = time.time()
-        data = client.fetch(duration=args.duration, device_list=["camera"])
+
+        data = client.fetch(duration=args.time, device_list=args.devices)
         processing_result = processor(data)
-        if args.streaming is True:
+        if args.streaming is not None:
             result_streaming.push_processing_result(processing_result)
-        if args.request is True:
+        if args.endpoint is not None:
             result_endpoint.set_result(processing_result)
 
         end = time.time()
         computation_delay = end-start
-        if computation_delay < args.duration:
-            time.sleep(args.duration - computation_delay)
+        if computation_delay < args.time:
+            time.sleep(args.time - computation_delay)
 
 if __name__ == '__main__':
     main()

@@ -26,18 +26,22 @@ class ResultEndpoint:
 
     @cherrypy.expose
     def get_processing_result(self):
-
         return json.dumps(self._result)
 
 
 class ResultEndpointServer(threading.Thread):
+    def __init__(self, host: str="0.0.0.0", port: int=9333):
+        super().__init__()
+        self._host = host
+        self._port = port
 
     def run(self):
         self._endpoint = ResultEndpoint()
 
         cherrypy.tree.mount(self._endpoint, '/')
 
-        cherrypy.server.socket_host = '0.0.0.0'
+        cherrypy.server.socket_host = self._host
+        cherrypy.server.socket_port = self._port
         cherrypy.engine.autoreload.on = False
         cherrypy.engine.start()
         cherrypy.engine.block()

@@ -22,19 +22,18 @@ import time
 
 class ResultStreaming:
 
-    def __init__(self, host: str= "127.0.0.1", port: int=9332):
-        self._host = host
-        self._port = port
+    def __init__(self, url: str= "http://127.0.0.1:9332/"):
+
+        self._url = url
 
     def push_processing_result(self, result):
-        url = "http://{0}:{1}/".format(self._host, self._port)
         result_json = json.dumps(result).encode('utf-8')
 
-        self.__post_data(url, result_json, retries=60)
+        self.__post_data(self._url, result_json, retries=60)
         
-    def __post_data(self, url, result_json, retries=3):
+    def __post_data(self, result_json, retries=3):
             try:
-                request = urllib.request.Request(url,
+                request = urllib.request.Request(self._url,
                                                 headers={"Content-Type": "application/json"},
                                                 method='POST',
                                                 data=result_json)
@@ -52,4 +51,4 @@ class ResultStreaming:
                 else:
                     logging.error(f"Posting data failed. Re-trying [{retries}]. Error: {err}")
                     time.sleep(1)
-                    self.__post_data(url, result_json, retries=retries - 1)
+                    self.__post_data(self._url, result_json, retries=retries - 1)

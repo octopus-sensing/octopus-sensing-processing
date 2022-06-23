@@ -26,18 +26,15 @@ class OctopusSensingClient:
         self._host = host
         self._port = port
 
-    def fetch(self, duration: int=3, device_list: Optional[List[str]]=None):
+    def fetch(self, duration: int=3, device_list: str=None):
         if device_list is None:
             url = "http://{0}:{1}/?duration={2}".format(self._host, self._port, duration)
         else:
-            device_list_str = ""
-            for item in device_list:
-                device_list_str += (item + ",")
-            device_list_str = device_list_str[:-1]
+            # device_list can be like this "device1,device2"
             url = "http://{0}:{1}/?duration={2}&device_list={3}".format(self._host,
                                                                         self._port,
                                                                         duration,
-                                                                        device_list_str)
+                                                                        device_list)
         try:
             serialized_data = self.__request_data(url, retries=60)
         except Exception as error:
