@@ -1,11 +1,13 @@
 Octopus Sensing Processing
 ==========================
 
-A real-time processing server for [Octopus Sensing](https://octopus-sensing.nastaran-saffar.me/). You can
-get your data from any machine in the same network and process them in real-time.
+Octopus Sensing Processing is a real-time data processing for [Octopus Sensing](https://octopus-sensing.nastaran-saffar.me/). 
+It can be used for processing data in real-time. You can define your favorite processor and process your data in real-time and publish the processing result. For example if you define an emotion recognition processor, Octopus Sensing Processing can prepare the input of your processor in real-time and publish your created prediction by streaming them as json data or other applications could send a request for receiving them when they needed the processing result.
 
 [Octopus Sensing Processing](https://github.com/octopus-sensing/octopus-sensing-processing) is 
-a separated project and can be installed for Octopus Sensing if we need real-time processing features.
+a separated project and can be installed if we need to visualize data. 
+It can be used for displaying recorded data with
+the same format as we recorded through Octopus Sensing.
 
 **To see the full documentation go to [Otopus Sensing](https://octopus-sensing.nastaran-saffar.me/processing) website.**
 
@@ -18,4 +20,4 @@ This program is free software: you can redistribute it and/or modify it under th
 General Public License as published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.
 
-See [License file](LICENSE) for full terms.
+See [License file](https://github.com/octopus-sensing/octopus-sensing/blob/master/LICENSE)  for full terms.
