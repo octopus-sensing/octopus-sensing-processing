@@ -29,7 +29,7 @@ def get_args():
                             type=int)
 
     arg_parser.add_argument("-d", "--devices",
-                            help="The list of devices names. It can be like this: device1,device2",
+                            help="The list of devices names (The names passed to device coordinator). It can be like this: device1,device2",
                             type=str,
                             required=True)
     arg_parser.add_argument("-s", "--streaming",
@@ -69,6 +69,9 @@ def main():
 
         data = client.fetch(duration=args.time, device_list=args.devices)
         processing_result = processor(data)
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4"),
+        print(processing_result)
+        print("octopus", processing_result)
         if args.streaming is not None:
             result_streaming.push_processing_result(processing_result)
         if args.endpoint is not None:
