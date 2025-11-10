@@ -44,6 +44,11 @@ def get_args():
     arg_parser.add_argument("-f", "--function",
                             help="The name of the processor function.",
                             required=True)
+    arg_parser.add_argument("-r", "--realtime_data_endpoint",
+                            help="The realtime data for processing. Example: http://127.0.0.1:9330/",
+                            type=str,
+                            default="localhost:9330")
+
     return arg_parser.parse_args()
 
 
@@ -53,7 +58,8 @@ def main():
     processor_module = __import__(args.module, globals(), locals(), [args.function])
     processor = getattr(processor_module, args.function)
 
-    client = OctopusSensingClient()
+    data_server_address = args.realtime_data_endpoint.split(":")
+    client = OctopusSensingClient(host=data_server_address[0], port=data_server_address[1])
 
     if args.endpoint is not None:
         server_address = args.endpoint.split(":")
@@ -69,7 +75,6 @@ def main():
 
         data = client.fetch(duration=args.time, device_list=args.devices)
         processing_result = processor(data)
-        print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4"),
         print(processing_result)
         print("octopus", processing_result)
         if args.streaming is not None:

@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "octopus-sensing-processing"
-version = "1.0.1"
+version = "1.0.2"
 description = "Web base data processing for https://octopus-sensing.nastaran-saffar.me"
-authors = ["Aidin Gharibnavaz <aidin@aidinhut.com>"]
+authors = ["Nastaran Saffaryazdi <nsaffar@gmail.com>", "Aidin Gharibnavaz <aidin@aidinhut.com>"]
 license = "GPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/octopus-sensing/octopus-sensing-processing"

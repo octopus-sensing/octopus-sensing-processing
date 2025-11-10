@@ -5,9 +5,7 @@ Octopus Sensing Processing is a real-time data processing for [Octopus Sensing](
 It can be used for processing data in real-time. You can define your favorite processor and process your data in real-time and publish the processing result. For example if you define an emotion recognition processor, Octopus Sensing Processing can prepare the input of your processor in real-time and publish your created prediction by streaming them as json data or other applications could send a request for receiving them when they needed the processing result.
 
 [Octopus Sensing Processing](https://github.com/octopus-sensing/octopus-sensing-processing) is 
-a separated project and can be installed if we need to visualize data. 
-It can be used for displaying recorded data with
-the same format as we recorded through Octopus Sensing.
+a separated project and can be installed if we need to process data in realtime. 
 
 **To see the full documentation go to [Otopus Sensing](https://octopus-sensing.nastaran-saffar.me/processing) website.**
 
