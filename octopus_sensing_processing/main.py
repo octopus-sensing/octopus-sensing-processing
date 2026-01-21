@@ -12,8 +12,10 @@
 # You should have received a copy of the GNU General Public License along with Octopus Sensing
 # Processing. If not, see <https://www.gnu.org/licenses/>.
 
+import sys
 import time
 import argparse
+import importlib
 
 from octopus_sensing_processing.octopus_sensing_client import OctopusSensingClient
 
@@ -39,10 +41,10 @@ def get_args():
                             help="GET endpoint for the result. Example: 0.0.0.0:9333",
                             type=str)
     arg_parser.add_argument("-m", "--module",
-                            help="The module containing the processor function.",
+                            help="The module containing the processor function. Example: /path/to/processor_module.py",
                             required=True)
     arg_parser.add_argument("-f", "--function",
-                            help="The name of the processor function.",
+                            help="The name of the processor function. Example: process_data",
                             required=True)
     arg_parser.add_argument("-r", "--realtime_data_endpoint",
                             help="The realtime data for processing. Example: http://127.0.0.1:9330/",
@@ -55,7 +57,17 @@ def get_args():
 def main():
     args = get_args()
 
-    processor_module = __import__(args.module, globals(), locals(), [args.function])
+    # Dynamically import the processor module and get the process_data function
+    module_name = "process_data"
+ 
+    spec = importlib.util.spec_from_file_location(module_name, args.module)
+    processor_module = importlib.util.module_from_spec(spec)
+
+    # Optional but recommended: register in sys.modules
+    sys.modules[module_name] = processor_module
+
+    spec.loader.exec_module(processor_module)
+
     processor = getattr(processor_module, args.function)
 
     data_server_address = args.realtime_data_endpoint.split(":")

@@ -44,6 +44,11 @@ class OctopusSensingClient:
         data = {}
 
         for key, device_data in raw_data.items():
+            if device_data["metadata"]["type"] == "TestDeviceStreaming":
+                data.setdefault("test", {})
+                data["test"]["data"] = device_data["data"]
+                data["test"]["sampling_rate"] = device_data["metadata"]["sampling_rate"]
+                data["test"]["channels"] = device_data["metadata"]["channels"]
             if device_data["metadata"]["type"] == "OpenBCIStreaming":
                 data.setdefault("eeg", {})
                 data["eeg"]["data"] = self._restructure_eeg(device_data["data"])
